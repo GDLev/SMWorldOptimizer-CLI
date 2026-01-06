@@ -24,6 +24,7 @@ To get started, type `node src/index.js --help`
 Example usage:
 ![HelpCommand](assets/example.png)
 
+I know... there is no code from the website here, but it will change when the project becomes stable and I finish everything I have planned. At the moment I recommend using cli (it's the same code, but executed differently) or hosted version
 ---
 
 **SM World Optimizer** helps keep your Scrap Mechanic worlds fast and stable, no matter how large they grow.
