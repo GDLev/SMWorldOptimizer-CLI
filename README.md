@@ -7,7 +7,7 @@ The goal of the tool is to restore the world to a usable and stable state when s
 ## Versions
 
 ### Web Version
-Available online: [https://smoptimizer.gdlev.dev](https://smoptimizer.gdlev.dev)  
+Available online: [https://smoptimizer.gdlev.dev](https://scrapoptimizer.gdlev.dev)  
 Allows you to optimize your worlds directly in the browser.
 
 ### CLI (Command Line Interface)
