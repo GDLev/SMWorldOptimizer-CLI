@@ -15,8 +15,9 @@ Runs locally on your computer.
 Works on the same principle as the web version, but all operations are performed locally on your save files.
 
 ## How to Use the CLI
-1. Clone the repository to your computer.  
-2. Run the tool in your terminal according to the instructions below.
+1. Clone the repository to your computer. `git clone https://github.com/GDLev/SMWorldOptimizer-CLI.git`
+2. Install the necessary libraries `npm install`
+3. Run the tool in your terminal according to the instructions below.
 
 To get started, type `node src/index.js --help`
 ![HelpCommand](assets/help.png)
