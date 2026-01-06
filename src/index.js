@@ -65,6 +65,12 @@ const options = {
 // Create logger
 const logger = new Logger(options);
 
+// Info
+logger.log(`SM World Optimizer CLI launched\n
+Version: v1.0.0
+Authors: GDLev
+Web: https://scrapoptimizer.gdlev.dev\n`)
+
 // Handle presets
 if (opts.preset && PRESETS[opts.preset]) {
     options.toOptimize.push(...PRESETS[opts.preset]);
