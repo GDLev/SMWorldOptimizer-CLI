@@ -80,9 +80,7 @@ if (opts.preset && PRESETS[opts.preset]) {
 Object.keys(opts).forEach((key) => {
     if (
         key.startsWith("del") ||
-        key.startsWith("remUnrefWood") ||
-        key.startsWith("remUnrefMetal") ||
-        key.startsWith("remSmallObjects")
+        key.startsWith("rem")
     ) {
         if (opts[key]) options.toOptimize.push(key);
     }
