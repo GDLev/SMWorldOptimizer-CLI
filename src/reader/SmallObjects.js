@@ -3,40 +3,49 @@ import mappings from "../mappings.json" with { type: "json" }; // remapped from 
 
 export default function readSmallObjects(db) {
     let index = 0;
-    const notJointed = db.prepare(`
-      WITH SingleChildBodies AS (
-          SELECT bodyId
-          FROM ChildShape
-          GROUP BY bodyId
-          HAVING COUNT(*) = 1
-      ),
-      SingleChildShapes AS (
-          SELECT cs.id AS childShapeId, cs.data
-          FROM ChildShape cs
-          JOIN SingleChildBodies scb ON cs.bodyId = scb.bodyId
-      )
-      SELECT scs.childShapeId, scs.data
-      FROM SingleChildShapes scs
-      LEFT JOIN ShapeGroup sg ON scs.childShapeId = sg.csId
-      LEFT JOIN RigidBodyBounds_rowid rb ON sg.id = rb.nodeno
-      LEFT JOIN RigidBody r ON rb.nodeno = r.id
-      WHERE rb.nodeno IS NULL AND r.id IS NULL;
-    `).all(); // this thing selects objects that have no connections and are of the same type
+    // Get all the objects from the save
+    const rigidBodies = db.prepare(`SELECT id FROM RigidBody`).all();
 
-    notJointed.forEach(x => {
-        const uuid = readUUID(x.data, 26); // reverse engineering | UUID index
-        let pos = { x: x.data[46], y: x.data[44], z: x.data[42] }; // reverse engineering | position indexes :I
+    rigidBodies.forEach(body => {
+        // Get all the shapes from the body AND GET INFO ABOUT JOINT
+        const shapes = db.prepare(`
+            SELECT cs.id, cs.data, j.id AS jointId
+            FROM ChildShape cs
+            LEFT JOIN Joint j ON j.childShapeIdA = cs.id OR j.childShapeIdB = cs.id
+            WHERE cs.bodyId = ?;
+        `).all(body.id);
 
-        let total = pos.x * pos.y * pos.z; // size of the object
+        const rigidBody = { elements: {}, id: body.id, stop: false }; // elements: name -> { count, shapes }
+        shapes.forEach(shape => {
+            if (shape.jointId) return rigidBody.stop = true;
+            const uuid = readUUID(shape.data, 26); // get UUID
+            let pos = { x: shape.data[46], y: shape.data[44], z: shape.data[42] }; // get pos values
+            let total = pos.x * pos.y * pos.z; // size of the object
 
-        if (uuid) {
-            let name = mappings[uuid];
-            if (name && name.startsWith("blk_") && total <= 3) { // each block has a prefix _blk in mappings
-                db.prepare(`DELETE FROM ChildShape WHERE id = ?`).run(x.childShapeId);
-                index++;
+            if (uuid) {
+                let name = mappings[uuid];
+                if (name && name.startsWith("blk_")) { // ! each block has a prefix _blk in mappings
+                    if (!rigidBody.elements[name]) rigidBody.elements[name] = { count: 0, shapes: [] } // def default value
+                    rigidBody.elements[name].shapes.push(shape.id) // insert a shape into the mapped object
+                    rigidBody.elements[name].count += total; // update object size
+                } else rigidBody.stop = true; // leave object if it contains non-blocks
             }
+        })
+
+        if (rigidBody.stop) return; // skip object
+        const sum = Object.values(rigidBody.elements).reduce((sum, el) => sum + el.count, 0);
+        if (sum <= 3 && sum !== 0) {
+            // delete shape group if exists
+            Object.values(rigidBody.elements).forEach(shapeGroup => {
+                shapeGroup.shapes.forEach(shapeId => {
+                    db.prepare(`DELETE FROM ShapeGroup WHERE csId = ?`).run(shapeId);
+                });
+            });
+            db.prepare(`DELETE FROM ChildShape WHERE bodyId = ?`).run(rigidBody.id); // delete shape
+            db.prepare(`DELETE FROM RigidBody WHERE id = ?`).run(rigidBody.id); // delete object
+
+            index++;
         }
     });
-
     return index;
 }
