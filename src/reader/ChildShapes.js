@@ -4,8 +4,8 @@ import mappings from "../mappings.json" with { type: "json" }; // remapped from 
 const cliMapper = {
     remUnrefWood: "obj_harvest_wood",
     remUnrefWood2: "obj_harvest_wood2",
-    remUnrefMetal: "obj_harvest_metal",
-    remUnrefMetal2: "obj_harvest_metal2",
+    remUnrefMetal: "obj_harvest_metal2",
+    remUnrefMetal2: "obj_harvest_metal",
     remUnrefStone: "obj_harvest_stone",
 };
 
